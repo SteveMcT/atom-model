@@ -1,4 +1,9 @@
+import atoms from "./assets/atoms.json";
 import Atom from "./entities/AtomGenerator";
 
-const atom = new Atom({ id: 1, name: "Hydrogen", size: 0.53, symbol: "H", protons: 30 });
-export default atom;
+export const generateAtom = (name: string) => {
+  const atomData = atoms.find((a) => a.name == name)!;
+
+  const atom = new Atom({ name: atomData.name, size: 0.5, symbol: atomData.symbol, protons: atomData.atomicNumber });
+  return atom;
+};

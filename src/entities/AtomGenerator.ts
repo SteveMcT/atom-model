@@ -45,9 +45,7 @@ export default class AtomGenerator extends IAtom {
     for (let layer = 1; layer <= this.layers; layer++) {
       let size = Math.pow(2, layer);
       protons -= size;
-
-      if (protons <= size && protons >= 0) size += protons;
-      console.log(protons, size);
+      if (protons < 0) size += protons;
 
       for (let i = 0; i < size; i++) {
         const next = ((2 * Math.PI) / size) * i - Math.PI / 2;
