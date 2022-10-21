@@ -1,45 +1,51 @@
-import { Scene } from "three";
+import { Color, Scene } from "three";
 import { camera } from "./core/controls";
 import renderer from "./core/renderer";
 import "./styles/dropdown.css";
 import "./styles/style.css";
 
-import atoms from "./assets/atoms.json";
+import atomList from "./assets/atoms.json";
 import { generateAtom } from "./Atom";
+import AtomGenerator from "./entities/AtomGenerator";
+
+let atom: AtomGenerator;
+let scene = new Scene();
 
 const dropDownElement = document.createElement("select");
+const dropDown = document.body.appendChild(dropDownElement);
+
 dropDownElement.id = "select-atoms";
 dropDownElement.name = "select-atoms";
 dropDownElement.value = "Hydrogen";
-const dropDown = document.body.appendChild(dropDownElement);
+dropDown.addEventListener("change", (e) => updateAtom((e.target! as any).value));
 
-atoms.map((a) => {
+// add the atoms to the dropdown
+atomList.map((atom) => {
   const element = document.createElement("option");
-  element.innerHTML = a.name;
-  element.value = a.name;
+  element.innerHTML = atom.name;
+  element.value = atom.name;
   dropDown.appendChild(element);
 });
 
-let scene = new Scene();
-let atom = generateAtom("Hydrogen");
-scene.add(atom.group);
-
-dropDown.addEventListener("change", (e) => {
-  const name = (e.target! as any).value;
-
-  scene = new Scene();
+const updateAtom = (name: string) => {
   atom = generateAtom(name);
+  scene.clear();
   scene.add(atom.group);
-});
+  scene.background = new Color(0x1d1d26);
+};
 
-renderer.setAnimationLoop(animation);
 function animation() {
-  atom.electrons.map((e) => {
-    e.angle += e.layer / 400;
-    e.position.x = Math.cos(e.angle) * e.distance;
-    e.position.y = Math.sin(e.angle) * e.distance;
-    e.body.position.set(e.position.x, e.position.y, e.position.z);
-  });
+  if (atom) {
+    atom.electrons.map((e) => {
+      e.angle += e.layer / 400;
+      e.position.x = Math.cos(e.angle) * e.distance;
+      e.position.y = Math.sin(e.angle) * e.distance;
+      e.body.position.copy(e.position);
+    });
+  }
 
   renderer.render(scene, camera);
 }
+
+updateAtom("Hydrogen");
+renderer.setAnimationLoop(animation);

@@ -1,4 +1,5 @@
-import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Vector3 } from "three";
+import { Color, DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Vector3 } from "three";
+import atoms from "../assets/atoms.json";
 import IAtom from "./IAtom";
 import IElectron from "./IElectron";
 
@@ -11,14 +12,17 @@ export default class AtomGenerator extends IAtom {
   constructor(props: IAtom) {
     super(props);
     this.generateLayers(props);
-    const electrons = this.generateElectrons(props.protons);
-    this.electrons = electrons;
 
-    this.group.add(new Mesh(new SphereGeometry(this.size, 100, 100), new MeshBasicMaterial())); // AtomBody
-    electrons.forEach((electron) => this.group.add(electron.body));
+    this.electrons = this.generateElectrons(props.protons);
+
+    const color = (atoms.find((a) => a.name == props.name)?.cpkHexColor || "FFFFFF").toLowerCase();
+
+    this.group.add(new Mesh(new SphereGeometry(this.size, 100, 100), new MeshBasicMaterial({ color: new Color(color) })));
+    this.electrons.forEach((electron) => this.group.add(electron.body));
   }
 
   generateLayers(props: IAtom) {
+    // calculate the number of layers
     let protons = props.protons;
     let placeInRing = 2;
 
@@ -30,6 +34,7 @@ export default class AtomGenerator extends IAtom {
       } else protons = 0;
     }
 
+    // add the layers as 3DObjects
     this.group.add(
       ...Array.from(Array(this.layers).keys()).map((i) => {
         const geometry = new RingGeometry(this.size + (i + 1), this.size + (i + 1.1), 50, 50);
@@ -54,8 +59,8 @@ export default class AtomGenerator extends IAtom {
         const y = Math.sin(next) * (this.size + layer);
         const position = new Vector3(x, y, 0);
 
-        const body = new Mesh(new SphereGeometry(0.1, 100, 100), new MeshBasicMaterial({ color: 0x4b89f3 }));
-        body.position.set(position.x, position.y, position.z);
+        const body = new Mesh(new SphereGeometry(0.1, 100, 100), new MeshBasicMaterial({ color: 0x9ae5f3 }));
+        body.position.copy(position);
 
         const electron = {
           layer: layer,
@@ -72,4 +77,6 @@ export default class AtomGenerator extends IAtom {
 
     return electrons;
   }
+
+  //TODO: Generate Atom Body based on Neutrons and Protons
 }
