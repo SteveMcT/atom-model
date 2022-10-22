@@ -2,11 +2,14 @@ import { Color, Scene } from "three";
 import { camera } from "./core/controls";
 import renderer from "./core/renderer";
 import "./styles/dropdown.css";
+import "./styles/information-screen.css";
 import "./styles/style.css";
 
 import atomList from "./assets/atoms.json";
 import { generateAtom } from "./Atom";
+import addInformationScreen from "./components/information-screen";
 import AtomGenerator from "./entities/AtomGenerator";
+import IJSONAtom from "./entities/IJSONAtom";
 
 let atom: AtomGenerator;
 let scene = new Scene();
@@ -28,10 +31,14 @@ atomList.map((atom) => {
 });
 
 const updateAtom = (name: string) => {
-  atom = generateAtom(name);
+  const atomData = atomList.find((a) => a.name == name)! as unknown as IJSONAtom;
+
+  atom = generateAtom(atomData);
   scene.clear();
   scene.add(atom.group);
   scene.background = new Color(0x1d1d26);
+
+  addInformationScreen(atomData);
 };
 
 function animation() {
