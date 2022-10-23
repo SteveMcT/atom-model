@@ -1,27 +1,27 @@
-import IJSONAtom from "../entities/IJSONAtom";
+import IJSONAtom from '../entities/IJSONAtom';
 
 const updateInformationScreen = (name: IJSONAtom) => {
-  document.querySelector("#information-screen")?.remove();
+  document.querySelector('#information-screen')?.remove();
 
-  const informationScreen = document.createElement("div");
-  informationScreen.id = "information-screen";
+  const informationScreen = document.createElement('div');
+  informationScreen.id = 'information-screen';
 
-  const informationScreenTitle = document.createElement("h1");
-  informationScreenTitle.id = "information-screen-title";
+  const informationScreenTitle = document.createElement('h1');
+  informationScreenTitle.id = 'information-screen-title';
   informationScreenTitle.innerHTML = name.name;
   informationScreen.appendChild(informationScreenTitle);
 
-  const minifyButton = document.createElement("button");
-  minifyButton.id = "minify-button";
-  minifyButton.innerHTML = "-";
-  minifyButton.addEventListener("click", () => {
-    minifyButton.innerText = minifyButton.innerText == "-" ? "+" : "-";
-    informationScreenContent.classList.toggle("minified");
+  const minifyButton = document.createElement('button');
+  minifyButton.id = 'minify-button';
+  minifyButton.innerHTML = '-';
+  minifyButton.addEventListener('click', () => {
+    minifyButton.innerText = minifyButton.innerText == '-' ? '+' : '-';
+    informationScreenContent.classList.toggle('minified');
   });
   informationScreen.appendChild(minifyButton);
 
-  const informationScreenContent = document.createElement("div");
-  informationScreenContent.id = "information-screen-content";
+  const informationScreenContent = document.createElement('div');
+  informationScreenContent.id = 'information-screen-content';
   informationScreen.appendChild(informationScreenContent);
   informationScreenContent.innerHTML = `
         <div class="information-screen-content-item">

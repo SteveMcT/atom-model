@@ -1,6 +1,14 @@
-import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Vector3 } from "three";
-import { default as Electron } from "./Electron";
-import IJSONAtom from "./IJSONAtom";
+import {
+  DoubleSide,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
+  RingGeometry,
+  SphereGeometry,
+  Vector3,
+} from 'three';
+import { default as Electron } from './Electron';
+import IJSONAtom from './IJSONAtom';
 
 export default class Atom {
   name: string;
@@ -40,7 +48,12 @@ export default class Atom {
     // add the layers as 3DObjects
     this.group.add(
       ...Array.from(Array(this.layers).keys()).map((i) => {
-        const geometry = new RingGeometry(this.size + (i + 1), this.size + (i + 1.02), (this.nucleons * 200) / this.nucleons, (this.nucleons * 200) / this.nucleons);
+        const geometry = new RingGeometry(
+          this.size + (i + 1),
+          this.size + (i + 1.02),
+          (this.nucleons * 200) / this.nucleons,
+          (this.nucleons * 200) / this.nucleons
+        );
         const material = new MeshBasicMaterial({ side: DoubleSide });
         return new Mesh(geometry, material);
       })
@@ -83,7 +96,9 @@ export default class Atom {
 
     for (let i = 0; i <= this.nucleons; i++) {
       const geometry = new SphereGeometry(r, 100, 100);
-      const material = new MeshBasicMaterial({ color: i % 2 == 0 ? protonColor : neutronColor });
+      const material = new MeshBasicMaterial({
+        color: i % 2 == 0 ? protonColor : neutronColor,
+      });
       const body = new Mesh(geometry, material);
 
       const random = () => Math.random() * this.nucleons;
