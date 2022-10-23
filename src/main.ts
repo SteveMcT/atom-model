@@ -41,18 +41,10 @@ const updateAtom = (name: string) => {
   addInformationScreen(atomData);
 };
 
-function animation() {
-  if (atom) {
-    atom.electrons.map((e) => {
-      e.angle += e.layer / 400;
-      e.position.x = Math.cos(e.angle) * e.distance;
-      e.position.y = Math.sin(e.angle) * e.distance;
-      e.body.position.copy(e.position);
-    });
-  }
-
+function animate() {
+  atom.electrons.map((e) => e.update());
   renderer.render(scene, camera);
 }
 
 updateAtom("Hydrogen");
-renderer.setAnimationLoop(animation);
+renderer.setAnimationLoop(animate);

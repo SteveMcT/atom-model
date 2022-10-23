@@ -18,4 +18,11 @@ export default class Electron {
     this.body = new Mesh(new SphereGeometry(this.size, 100, 100), new MeshBasicMaterial({ color: 0x9ae5f3 }));
     this.body.position.copy(position);
   }
+
+  update() {
+    this.angle += this.layer / 400;
+    this.position.x = Math.cos(this.angle) * this.distance;
+    this.position.y = Math.sin(this.angle) * this.distance;
+    this.body.position.copy(this.position);
+  }
 }
