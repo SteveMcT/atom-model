@@ -1,17 +1,17 @@
 #select-atoms {
   position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   top: 1rem;
-  left: 2rem;
   z-index: 400;
 
   /* appearance: none; */
   background-color: transparent;
   padding: 0 1em 0 0;
-  border: 2px solid #fff;
+  border: 1.5px solid #fff;
   border-radius: 0.25rem;
   outline: none;
 
-  cursor: pointer;
   font-family: inherit;
   font-size: inherit;
   cursor: inherit;

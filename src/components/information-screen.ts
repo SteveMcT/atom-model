@@ -1,6 +1,6 @@
 import IJSONAtom from "../entities/IJSONAtom";
 
-const addInformationScreen = (name: IJSONAtom) => {
+const updateInformationScreen = (name: IJSONAtom) => {
   document.querySelector("#information-screen")?.remove();
 
   const informationScreen = document.createElement("div");
@@ -100,4 +100,4 @@ const addInformationScreen = (name: IJSONAtom) => {
   document.body.appendChild(informationScreen);
 };
 
-export default addInformationScreen;
+export default updateInformationScreen;
