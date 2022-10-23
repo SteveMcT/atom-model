@@ -1,7 +1,7 @@
 import { WebGLRenderer } from "three";
 import { camera } from "./controls";
 
-const renderer = new WebGLRenderer({ antialias: true });
+const renderer = new WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 

@@ -2,10 +2,22 @@
   position: absolute;
   top: 2rem;
   right: 3rem;
-  background: rgba(255, 255, 255, 0.159);
+  background: #414149;
+  box-shadow: 0 0 2rem -0.2rem #000000bf;
   padding: 2rem;
   border-radius: 0.4rem;
   z-index: 500;
+  transition: 0.4s;
+}
+
+#information-screen:has(.minified) {
+  padding: 1rem;
+}
+
+#information-screen:hover:not(:has(.minified)) {
+  top: 8rem;
+  right: 6rem;
+  scale: 1.4;
 }
 
 #information-screen-title {

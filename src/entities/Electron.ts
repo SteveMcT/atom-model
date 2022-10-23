@@ -20,7 +20,7 @@ export default class Electron {
   }
 
   update() {
-    this.angle += this.layer / 400;
+    this.angle += this.layer / 600;
     this.position.x = Math.cos(this.angle) * this.distance;
     this.position.y = Math.sin(this.angle) * this.distance;
     this.body.position.copy(this.position);

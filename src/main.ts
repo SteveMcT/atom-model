@@ -14,6 +14,7 @@ import { dropDown } from "./components/atom-dropdown";
 
 let atom: Atom;
 let scene = new Scene();
+scene.background = new Color(0x1d1d26);
 
 // add the atoms to the dropdown
 atomList.map((atom) => {
@@ -29,7 +30,6 @@ const updateAtom = (name: string) => {
   atom = new Atom(atomData);
 
   scene.clear().add(atom.group);
-  scene.background = new Color(0x1d1d26);
 
   updateInformationScreen(atomData);
 };

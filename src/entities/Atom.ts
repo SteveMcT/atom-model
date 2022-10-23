@@ -40,7 +40,7 @@ export default class Atom {
     // add the layers as 3DObjects
     this.group.add(
       ...Array.from(Array(this.layers).keys()).map((i) => {
-        const geometry = new RingGeometry(this.size + (i + 1), this.size + (i + 1.02), 50, 50);
+        const geometry = new RingGeometry(this.size + (i + 1), this.size + (i + 1.02), (this.nucleons * 200) / this.nucleons, (this.nucleons * 200) / this.nucleons);
         const material = new MeshBasicMaterial({ side: DoubleSide });
         return new Mesh(geometry, material);
       })
