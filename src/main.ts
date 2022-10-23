@@ -6,12 +6,11 @@ import "./styles/information-screen.css";
 import "./styles/style.css";
 
 import atomList from "./assets/atoms.json";
-import { generateAtom } from "./Atom";
 import addInformationScreen from "./components/information-screen";
-import AtomGenerator from "./entities/AtomGenerator";
+import Atom from "./entities/Atom";
 import IJSONAtom from "./entities/IJSONAtom";
 
-let atom: AtomGenerator;
+let atom: Atom;
 let scene = new Scene();
 
 const dropDownElement = document.createElement("select");
@@ -33,9 +32,10 @@ atomList.map((atom) => {
 const updateAtom = (name: string) => {
   const atomData = atomList.find((a) => a.name == name)! as unknown as IJSONAtom;
 
-  atom = generateAtom(atomData);
+  atom = new Atom(atomData);
   scene.clear();
   scene.add(atom.group);
+  console.log(atom.group);
   scene.background = new Color(0x1d1d26);
 
   addInformationScreen(atomData);

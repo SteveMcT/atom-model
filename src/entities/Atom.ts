@@ -1,15 +1,23 @@
 import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Vector3 } from "three";
-import IAtom from "./IAtom";
 import IElectron from "./IElectron";
+import IJSONAtom from "./IJSONAtom";
 
-export default class AtomGenerator extends IAtom {
+export default class Atom {
+  name: string;
+  symbol: string;
+  nucleons: number;
+  size: number;
   layers: number = 0;
   electrons: IElectron[] = [];
   rings: Mesh<RingGeometry, MeshBasicMaterial>[] = [];
   group = new Group();
 
-  constructor(props: IAtom) {
-    super(props);
+  constructor(atomData: IJSONAtom) {
+    this.name = atomData.name;
+    this.symbol = atomData.symbol;
+    this.nucleons = atomData.atomicNumber;
+    this.size = 2;
+
     this.generateCore();
     this.generateLayers();
     this.generateElectrons();
@@ -31,7 +39,7 @@ export default class AtomGenerator extends IAtom {
     // add the layers as 3DObjects
     this.group.add(
       ...Array.from(Array(this.layers).keys()).map((i) => {
-        const geometry = new RingGeometry(this.size + (i + 1), this.size + (i + 1.1), 50, 50);
+        const geometry = new RingGeometry(this.size + (i + 1), this.size + (i + 1.02), 50, 50);
         const material = new MeshBasicMaterial({ side: DoubleSide });
         return new Mesh(geometry, material);
       })
@@ -39,6 +47,7 @@ export default class AtomGenerator extends IAtom {
   }
 
   generateElectrons() {
+    const electronSize = 0.05;
     let nucleons = this.nucleons;
     const electrons: IElectron[] = [];
 
@@ -54,7 +63,7 @@ export default class AtomGenerator extends IAtom {
         const y = Math.sin(next) * (this.size + layer);
         const position = new Vector3(x, y, 0);
 
-        const body = new Mesh(new SphereGeometry(0.1, 100, 100), new MeshBasicMaterial({ color: 0x9ae5f3 }));
+        const body = new Mesh(new SphereGeometry(electronSize, 100, 100), new MeshBasicMaterial({ color: 0x9ae5f3 }));
         body.position.copy(position);
 
         const electron = {
@@ -102,6 +111,4 @@ export default class AtomGenerator extends IAtom {
 
     this.group.add(core);
   }
-
-  //TODO: Generate Atom Body based on Neutrons and Protons
 }
