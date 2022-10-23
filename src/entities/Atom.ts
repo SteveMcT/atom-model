@@ -1,5 +1,5 @@
 import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Vector3 } from "three";
-import IElectron from "./IElectron";
+import { default as Electron, default as IElectron } from "./Electron";
 import IJSONAtom from "./IJSONAtom";
 
 export default class Atom {
@@ -47,9 +47,8 @@ export default class Atom {
   }
 
   generateElectrons() {
-    const electronSize = 0.05;
     let nucleons = this.nucleons;
-    const electrons: IElectron[] = [];
+    const electrons: Electron[] = [];
 
     for (let layer = 1; layer <= this.layers; layer++) {
       let size = Math.pow(2, layer);
@@ -63,19 +62,7 @@ export default class Atom {
         const y = Math.sin(next) * (this.size + layer);
         const position = new Vector3(x, y, 0);
 
-        const body = new Mesh(new SphereGeometry(electronSize, 100, 100), new MeshBasicMaterial({ color: 0x9ae5f3 }));
-        body.position.copy(position);
-
-        const electron = {
-          layer: layer,
-          angle: next,
-          distance: this.size + layer,
-          id: electrons.length,
-          position: position,
-          body: body,
-        };
-
-        electrons.push(electron);
+        electrons.push(new Electron(next, this.size + layer, layer, position));
       }
     }
 
