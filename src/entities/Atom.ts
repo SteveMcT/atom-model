@@ -64,8 +64,52 @@ export default class Atom {
     let nucleons = this.nucleons;
     const electrons = new Group();
 
+    let layer = 0;
+    const maxAllowed = [2, 8, 18, 32, 32, 18, 8];
+    const electronsInLayer: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+    for (let i = 0; i < nucleons; i++) {
+      if (layer == 0) {
+        electronsInLayer[0]++;
+        if (electronsInLayer[0] == 2) layer++;
+      } else {
+        // 1. count up to 2
+        if (electronsInLayer[layer] <= 1) {
+          electronsInLayer[layer]++;
+          i++;
+        }
+        console.log('Filled up to two!');
+        console.log(electronsInLayer);
+        console.log('------------------------');
+
+        while (
+          electronsInLayer[layer - 1] < maxAllowed[layer - 1] &&
+          i < nucleons
+        ) {
+          electronsInLayer[layer - 1]++;
+          i++;
+        }
+        console.log('Filled up layer before!');
+        console.log(electronsInLayer);
+        console.log('------------------------');
+
+        // fill to 8
+        while (electronsInLayer[layer] <= 7 && i < nucleons) {
+          electronsInLayer[layer]++;
+          i++;
+        }
+        console.log('Filled the current layer to eight!');
+        console.log(electronsInLayer);
+        console.log('------------------------');
+
+        layer++;
+      }
+    }
+
     for (let layer = 1; layer <= this.layers; layer++) {
-      let size = Math.pow(2, layer);
+      //
+      let size = Math.pow(2, layer + 1) * 2;
+
       nucleons -= size;
       if (nucleons < 0) size += nucleons;
 
