@@ -132,7 +132,7 @@ export default class Atom {
 
     const electrons = new Group();
 
-    let l = 0;
+    let l = 1;
     for (let layer of this.layers) {
       if (layer == 0) break;
 
@@ -143,7 +143,7 @@ export default class Atom {
         const y = Math.sin(next) * (this.size + l);
         const position = new Vector3(x, y, 0);
 
-        const electron = new Electron(next, this.size + layer, layer, position);
+        const electron = new Electron(next, this.size + l, l, position);
         electrons.add(electron.body);
         this.electrons.push(electron);
       }
