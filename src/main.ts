@@ -1,6 +1,7 @@
 import { Color, Scene } from 'three';
 import { camera } from './core/controls';
 import renderer from './core/renderer';
+import './styles/checkbox.css';
 import './styles/dropdown.css';
 import './styles/information-screen.css';
 import './styles/style.css';
@@ -9,6 +10,7 @@ import updateInformationScreen from './components/information-screen';
 import Atom from './entities/Atom';
 import IJSONAtom from './entities/IJSONAtom';
 
+import { checkBoxContainer } from './components/atom-checkbox';
 import { dropDown } from './components/atom-dropdown';
 import _atomStore from './stores/atom.store';
 
@@ -27,6 +29,10 @@ dropDown.addEventListener('change', (e) =>
   updateAtom((e.target! as any).value)
 );
 
+checkBoxContainer.addEventListener('change', (e) => {
+  _atomStore.enableRotate.next((e.target! as any).checked);
+});
+
 const updateAtom = (name: string) => {
   const atomData = _atomStore.atomList.value.find(
     (a) => a.name == name
@@ -39,8 +45,8 @@ const updateAtom = (name: string) => {
 };
 
 function animate() {
-  atom.electrons.map((e) => e.update());
   renderer.render(scene, camera);
+  atom.animate();
 }
 
 updateAtom('Hydrogen');

@@ -1,0 +1,7 @@
+#checkBoxContainer {
+  position: absolute;
+  left: 60%;
+  transform: translateX(-50%);
+  top: 1rem;
+  z-index: 400;
+}

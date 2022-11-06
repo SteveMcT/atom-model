@@ -17,9 +17,11 @@ export default class Atom {
   nucleons: number;
   size: number;
   layers: number[] = [];
+  angle = 0;
   rings: Mesh<RingGeometry, MeshBasicMaterial>[] = [];
 
   group = new Group();
+  layerObjects = new Group();
   electrons: Electron[] = [];
 
   constructor(atomData: IJSONAtom) {
@@ -28,37 +30,17 @@ export default class Atom {
     this.nucleons = atomData.atomicNumber;
     this.size = 2;
 
-    this.generateElectrons();
+    this.generateLayersWithElectrons();
     this.generateCore();
-    this.generateLayers();
   }
 
-  // add Layers as 3DObjects
-  generateLayers() {
-    const material = new MeshBasicMaterial({ side: DoubleSide });
-
-    let i = 0;
-    for (let layer of this.layers) {
-      if (layer != 0) {
-        const geometry = new RingGeometry(
-          this.size + (i + 1),
-          this.size + (i + 1.02),
-          (this.nucleons * 200) / this.nucleons,
-          (this.nucleons * 200) / this.nucleons
-        );
-        this.group.add(new Mesh(geometry, material));
-        i++;
-      }
-    }
-  }
-
-  generateElectrons() {
+  generateLayersWithElectrons() {
+    // get electronic configuration, structure of the atom
     const atom = _atomStore.atomList.value.find((x) => x.name == this.name);
 
     if (atom) {
       const getElectronicConfiguration: any = (a = atom) => {
         let config = a.electronicConfiguration;
-        // console.log(config.replace(/\[\w*\]/, ''));
         if (!config.includes('[')) return config.replace(/\[\w*\]/, '');
         else {
           return config
@@ -77,6 +59,7 @@ export default class Atom {
         }
       };
 
+      // Calculate amount of electrons in each layer
       let electrons: string | string[] = getElectronicConfiguration() as string;
       electrons = electrons.replaceAll('  ', ' ').trim().split(' ');
       const sumPerLayer = [0, 0, 0, 0, 0, 0, 0];
@@ -89,87 +72,64 @@ export default class Atom {
       this.layers = sumPerLayer;
     }
 
-    // let usedElectrons = 0;
-    // const maxAllowed = [2, 8, 18, 32, 50]; // maximal number of electrons in each layer
-    // const electronsInLayer: number[] = [0, 0, 0, 0, 0];
+    // add elements as objects to scene
 
-    // const electrons = new Group();
-    // let nucleons = this.nucleons;
-
-    // for (let allowed of maxAllowed) {
-    //   if (allowed >= usedElectrons) {
-    //     electronsInLayer[this.layers] = allowed;
-    //     usedElectrons += allowed;
-    //     this.layers++;
-    //   } else {
-    //   }
-    // }
-
-    // for (let i = 0; i <= nucleons; i++) {
-    //   if (this.layers == 0) {
-    //     electronsInLayer[this.layers]++;
-    //     if (electronsInLayer[this.layers] != 2) this.layers++;
-    //   } else {
-    //     // 1. count up to 2
-    //     if (electronsInLayer[this.layers] <= 2) {
-    //       electronsInLayer[this.layers]++, i++;
-    //     }
-    //     while (
-    //       electronsInLayer[this.layers - 1] < maxAllowed[this.layers - 1] &&
-    //       i < nucleons
-    //     ) {
-    //       electronsInLayer[this.layers - 1]++;
-    //       i++;
-    //     }
-    //     // fill to 8
-    //     while (electronsInLayer[this.layers] <= 7 && i < nucleons) {
-    //       electronsInLayer[this.layers]++;
-    //       i++;
-    //     }
-
-    //     this.layers++;
-    //
-
-    const electrons = new Group();
+    const material = new MeshBasicMaterial({ side: DoubleSide });
+    const PI_DOUBLE = Math.PI * 2;
+    const PI_HALF = Math.PI / 2;
 
     let l = 1;
-    for (let layer of this.layers) {
-      if (layer == 0) break;
+    for (let electrons of this.layers) {
+      if (electrons == 0) break;
 
-      for (let i = 0; i < layer; i++) {
-        const next = ((2 * Math.PI) / layer) * i - Math.PI / 2;
+      const fullLayer = new Group();
+
+      const layerObject3D = new Mesh(
+        new RingGeometry(
+          this.size + l,
+          this.size + l + 0.02,
+          (this.nucleons * 200) / this.nucleons,
+          (this.nucleons * 200) / this.nucleons
+        ),
+        material
+      );
+
+      fullLayer.add(layerObject3D);
+
+      for (let i = 0; i < electrons; i++) {
+        const next = (PI_DOUBLE / electrons) * i - PI_HALF;
 
         const x = Math.cos(next) * (this.size + l);
         const y = Math.sin(next) * (this.size + l);
         const position = new Vector3(x, y, 0);
 
-        const electron = new Electron(next, this.size + l, l, position);
-        electrons.add(electron.body);
+        const electron = new Electron(next, this.size + l, position);
+        fullLayer.add(electron.body);
         this.electrons.push(electron);
       }
+
+      this.layerObjects.add(fullLayer);
       l++;
     }
 
-    this.group.add(electrons);
+    this.group.add(this.layerObjects);
   }
 
   generateCore() {
+    const core = new Group();
     const protonColor = 0x4a45e3;
     const neutronColor = 0xfa2503;
-
-    const core = new Group();
-    const multiplier = this.nucleons / 24;
-
     const r = 0.1;
+    const geometry = new SphereGeometry(r, 100, 100);
+
+    const multiplier = this.nucleons / 24;
+    const random = () => Math.random() * this.nucleons;
 
     for (let i = 0; i <= this.nucleons; i++) {
-      const geometry = new SphereGeometry(r, 100, 100);
       const material = new MeshBasicMaterial({
         color: i % 2 == 0 ? protonColor : neutronColor,
       });
       const body = new Mesh(geometry, material);
-
-      const random = () => Math.random() * this.nucleons;
 
       const s = random();
       const t = random();
@@ -182,5 +142,28 @@ export default class Atom {
     }
 
     this.group.add(core);
+  }
+
+  animate() {
+    this.layerObjects.children.map((l, i) => {
+      if (_atomStore.enableRotate.value) {
+        const rotationAngle = l.children.length / 800;
+        l.rotation.z += rotationAngle;
+        l.rotation.y += (rotationAngle / 2) * i + 0.02;
+        l.rotation.x += (rotationAngle / 2) * i + 0.02;
+      } else {
+        l.rotation.x = 0;
+        l.rotation.y = 0;
+        l.rotation.z = 0;
+      }
+
+      // l.children.length / 600;
+      // console.log(this.angle);
+
+      // l.rotateY(this.angle);
+      // l.setRotationFromAxisAngle(new Vector3(0, 0, 0), this.angle);
+      // e.body.position.copy(this.position);
+      // });
+    });
   }
 }
