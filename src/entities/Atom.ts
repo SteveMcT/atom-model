@@ -5,6 +5,7 @@ import {
   MeshBasicMaterial,
   RingGeometry,
   SphereGeometry,
+  Vector3,
 } from 'three';
 import _atomStore from '../stores/atom.store';
 import { default as Electron } from './Electron';
@@ -15,7 +16,7 @@ export default class Atom {
   symbol: string;
   nucleons: number;
   size: number;
-  layers: number = 0;
+  layers: number[] = [];
   rings: Mesh<RingGeometry, MeshBasicMaterial>[] = [];
 
   group = new Group();
@@ -27,56 +28,65 @@ export default class Atom {
     this.nucleons = atomData.atomicNumber;
     this.size = 2;
 
+    this.generateElectrons();
     this.generateCore();
     this.generateLayers();
-    this.generateElectrons();
   }
 
   // add Layers as 3DObjects
   generateLayers() {
-    this.group.add(
-      ...Array.from(Array(this.layers).keys()).map((i) => {
+    const material = new MeshBasicMaterial({ side: DoubleSide });
+
+    let i = 0;
+    for (let layer of this.layers) {
+      if (layer != 0) {
         const geometry = new RingGeometry(
           this.size + (i + 1),
           this.size + (i + 1.02),
           (this.nucleons * 200) / this.nucleons,
           (this.nucleons * 200) / this.nucleons
         );
-        const material = new MeshBasicMaterial({ side: DoubleSide });
-        return new Mesh(geometry, material);
-      })
-    );
+        this.group.add(new Mesh(geometry, material));
+        i++;
+      }
+    }
   }
 
   generateElectrons() {
-    const usedLetters = [];
-
     const atom = _atomStore.atomList.value.find((x) => x.name == this.name);
 
     if (atom) {
       const getElectronicConfiguration: any = (a = atom) => {
         let config = a.electronicConfiguration;
-        console.log(config.replace(/\[\w*\]/, ''));
+        // console.log(config.replace(/\[\w*\]/, ''));
         if (!config.includes('[')) return config.replace(/\[\w*\]/, '');
         else {
           return config
             .replace(/\[\w*\]/, '')
+            .concat(' ')
             .concat(
-              ' ' +
-                getElectronicConfiguration(
-                  _atomStore.atomList.value.find(
-                    (atom) =>
-                      atom.symbol ==
-                      a.electronicConfiguration
-                        .match(/(?<=\[).+?(?=\])/)
-                        ?.at(0)!
-                  )
+              getElectronicConfiguration(
+                _atomStore.atomList.value.find(
+                  (atom) =>
+                    atom.symbol ==
+                    a.electronicConfiguration.match(/(?<=\[).+?(?=\])/)?.at(0)!
                 )
-            );
+              )
+            )
+            .concat(' ');
         }
       };
 
-      console.log(getElectronicConfiguration());
+      let electrons: string | string[] = getElectronicConfiguration() as string;
+      electrons = electrons.replaceAll('  ', ' ').trim().split(' ');
+      const sumPerLayer = [0, 0, 0, 0, 0, 0, 0];
+      electrons.map((electron) => {
+        const index = parseInt(electron.charAt(0)) - 1;
+        const number = parseInt(electron.slice(2));
+
+        sumPerLayer[index] += number;
+      });
+      this.layers = sumPerLayer;
     }
 
     // let usedElectrons = 0;
@@ -120,27 +130,27 @@ export default class Atom {
     //     this.layers++;
     //
 
-    // for (let layer = 1; layer <= this.layers; layer++) {
-    //   //
-    //   let size = Math.pow(2, layer + 1) * 2;
+    const electrons = new Group();
 
-    //   nucleons -= size;
-    //   if (nucleons < 0) size += nucleons;
+    let l = 0;
+    for (let layer of this.layers) {
+      if (layer == 0) break;
 
-    //   for (let i = 0; i < size; i++) {
-    //     const next = ((2 * Math.PI) / size) * i - Math.PI / 2;
+      for (let i = 0; i < layer; i++) {
+        const next = ((2 * Math.PI) / layer) * i - Math.PI / 2;
 
-    //     const x = Math.cos(next) * (this.size + layer);
-    //     const y = Math.sin(next) * (this.size + layer);
-    //     const position = new Vector3(x, y, 0);
+        const x = Math.cos(next) * (this.size + l);
+        const y = Math.sin(next) * (this.size + l);
+        const position = new Vector3(x, y, 0);
 
-    //     const electron = new Electron(next, this.size + layer, layer, position);
-    //     electrons.add(electron.body);
-    //     this.electrons.push(electron);
-    //   }
-    // }
+        const electron = new Electron(next, this.size + layer, layer, position);
+        electrons.add(electron.body);
+        this.electrons.push(electron);
+      }
+      l++;
+    }
 
-    // this.group.add(electrons);
+    this.group.add(electrons);
   }
 
   generateCore() {
