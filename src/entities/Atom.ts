@@ -5,8 +5,8 @@ import {
   MeshBasicMaterial,
   RingGeometry,
   SphereGeometry,
-  Vector3,
 } from 'three';
+import _atomStore from '../stores/atom.store';
 import { default as Electron } from './Electron';
 import IJSONAtom from './IJSONAtom';
 
@@ -32,20 +32,8 @@ export default class Atom {
     this.generateElectrons();
   }
 
+  // add Layers as 3DObjects
   generateLayers() {
-    // calculate the number of layers
-    let protons = this.nucleons;
-    let placeInRing = 2;
-
-    while (protons > 0) {
-      this.layers++;
-      if (protons >= placeInRing) {
-        protons -= placeInRing;
-        placeInRing *= 2;
-      } else protons = 0;
-    }
-
-    // add the layers as 3DObjects
     this.group.add(
       ...Array.from(Array(this.layers).keys()).map((i) => {
         const geometry = new RingGeometry(
@@ -61,72 +49,98 @@ export default class Atom {
   }
 
   generateElectrons() {
-    let nucleons = this.nucleons;
-    const electrons = new Group();
+    const usedLetters = [];
 
-    let layer = 0;
-    const maxAllowed = [2, 8, 18, 32, 32, 18, 8];
-    const electronsInLayer: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+    const atom = _atomStore.atomList.value.find((x) => x.name == this.name);
 
-    for (let i = 0; i < nucleons; i++) {
-      if (layer == 0) {
-        electronsInLayer[0]++;
-        if (electronsInLayer[0] == 2) layer++;
-      } else {
-        // 1. count up to 2
-        if (electronsInLayer[layer] <= 1) {
-          electronsInLayer[layer]++;
-          i++;
+    if (atom) {
+      const getElectronicConfiguration: any = (a = atom) => {
+        let config = a.electronicConfiguration;
+        console.log(config.replace(/\[\w*\]/, ''));
+        if (!config.includes('[')) return config.replace(/\[\w*\]/, '');
+        else {
+          return config
+            .replace(/\[\w*\]/, '')
+            .concat(
+              ' ' +
+                getElectronicConfiguration(
+                  _atomStore.atomList.value.find(
+                    (atom) =>
+                      atom.symbol ==
+                      a.electronicConfiguration
+                        .match(/(?<=\[).+?(?=\])/)
+                        ?.at(0)!
+                  )
+                )
+            );
         }
-        console.log('Filled up to two!');
-        console.log(electronsInLayer);
-        console.log('------------------------');
+      };
 
-        while (
-          electronsInLayer[layer - 1] < maxAllowed[layer - 1] &&
-          i < nucleons
-        ) {
-          electronsInLayer[layer - 1]++;
-          i++;
-        }
-        console.log('Filled up layer before!');
-        console.log(electronsInLayer);
-        console.log('------------------------');
-
-        // fill to 8
-        while (electronsInLayer[layer] <= 7 && i < nucleons) {
-          electronsInLayer[layer]++;
-          i++;
-        }
-        console.log('Filled the current layer to eight!');
-        console.log(electronsInLayer);
-        console.log('------------------------');
-
-        layer++;
-      }
+      console.log(getElectronicConfiguration());
     }
 
-    for (let layer = 1; layer <= this.layers; layer++) {
-      //
-      let size = Math.pow(2, layer + 1) * 2;
+    // let usedElectrons = 0;
+    // const maxAllowed = [2, 8, 18, 32, 50]; // maximal number of electrons in each layer
+    // const electronsInLayer: number[] = [0, 0, 0, 0, 0];
 
-      nucleons -= size;
-      if (nucleons < 0) size += nucleons;
+    // const electrons = new Group();
+    // let nucleons = this.nucleons;
 
-      for (let i = 0; i < size; i++) {
-        const next = ((2 * Math.PI) / size) * i - Math.PI / 2;
+    // for (let allowed of maxAllowed) {
+    //   if (allowed >= usedElectrons) {
+    //     electronsInLayer[this.layers] = allowed;
+    //     usedElectrons += allowed;
+    //     this.layers++;
+    //   } else {
+    //   }
+    // }
 
-        const x = Math.cos(next) * (this.size + layer);
-        const y = Math.sin(next) * (this.size + layer);
-        const position = new Vector3(x, y, 0);
+    // for (let i = 0; i <= nucleons; i++) {
+    //   if (this.layers == 0) {
+    //     electronsInLayer[this.layers]++;
+    //     if (electronsInLayer[this.layers] != 2) this.layers++;
+    //   } else {
+    //     // 1. count up to 2
+    //     if (electronsInLayer[this.layers] <= 2) {
+    //       electronsInLayer[this.layers]++, i++;
+    //     }
+    //     while (
+    //       electronsInLayer[this.layers - 1] < maxAllowed[this.layers - 1] &&
+    //       i < nucleons
+    //     ) {
+    //       electronsInLayer[this.layers - 1]++;
+    //       i++;
+    //     }
+    //     // fill to 8
+    //     while (electronsInLayer[this.layers] <= 7 && i < nucleons) {
+    //       electronsInLayer[this.layers]++;
+    //       i++;
+    //     }
 
-        const electron = new Electron(next, this.size + layer, layer, position);
-        electrons.add(electron.body);
-        this.electrons.push(electron);
-      }
-    }
+    //     this.layers++;
+    //
 
-    this.group.add(electrons);
+    // for (let layer = 1; layer <= this.layers; layer++) {
+    //   //
+    //   let size = Math.pow(2, layer + 1) * 2;
+
+    //   nucleons -= size;
+    //   if (nucleons < 0) size += nucleons;
+
+    //   for (let i = 0; i < size; i++) {
+    //     const next = ((2 * Math.PI) / size) * i - Math.PI / 2;
+
+    //     const x = Math.cos(next) * (this.size + layer);
+    //     const y = Math.sin(next) * (this.size + layer);
+    //     const position = new Vector3(x, y, 0);
+
+    //     const electron = new Electron(next, this.size + layer, layer, position);
+    //     electrons.add(electron.body);
+    //     this.electrons.push(electron);
+    //   }
+    // }
+
+    // this.group.add(electrons);
   }
 
   generateCore() {
